@@ -1,0 +1,31 @@
+---
+import { formatBlogPosts, slugify } from "../js/utils"
+
+const allPosts = await Astro.glob("../pages/blog/*.md")
+const fromattedPosts = formatBlogPosts(allPosts)
+const allAuthors = fromattedPosts.map((author) => author.frontmatter.author.toLowerCase())
+console.log(allAuthors)
+
+const proccessedAuthors = allAuthors.reduce((acc, category) => {
+  const value = acc[category] || 0
+  return {
+    ...acc,
+    [category]: value + 1,
+  }
+}, {})
+// console.log(proccessedAuthors)
+
+const { showCount } = Astro.props
+---
+
+<ul class='categories'>
+  {
+    Object.entries(proccessedAuthors).map(([key, val]) => (
+      <li>
+        <a class='badge' href={`/author/${slugify(key)}/`}>
+          {key} {showCount && `(${val})`}
+        </a>
+      </li>
+    ))
+  }
+</ul>

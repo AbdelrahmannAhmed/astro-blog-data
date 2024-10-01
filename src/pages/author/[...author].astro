@@ -1,0 +1,40 @@
+---
+import AuthorCloud from "../../components/AuthorCloud.astro"
+import PostCard from "../../components/PostCard.astro"
+import { formatBlogPosts, slugify } from "../../js/utils"
+import MainLayout from "../../layouts/MainLayout.astro"
+
+export async function getStaticPaths() {
+  // Making array of names of Authors
+
+  const allPosts = await Astro.glob("../blog/*.md")
+  const fromattedPosts = formatBlogPosts(allPosts)
+  const allAuthors = [...new Set(fromattedPosts.map((post) => post.frontmatter.author).flat())]
+
+  // Getting posts for each Author
+
+  return allAuthors.map((author) => {
+    const authorPosts = fromattedPosts.filter((post) => post.frontmatter.author === author)
+    return {
+      params: { author: slugify(author) },
+      props: {
+        authorName: author,
+        posts: authorPosts,
+      },
+    }
+  })
+}
+
+const { author } = Astro.params
+const { authorName, posts } = Astro.props
+---
+
+<MainLayout title={authorName}>
+  <section class='container' aria-label={`Posts about ${authorName}`}>
+    <h1 class='h1'>Post about <span>{authorName}</span></h1>
+    <div class='post-container'>
+      {posts.map((post) => <PostCard frontmatter={post.frontmatter} url={post.url} tagType='h2' />)}
+    </div>
+  </section>
+  <AuthorCloud showCount={true} />
+</MainLayout>

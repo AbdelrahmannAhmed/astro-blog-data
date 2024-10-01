@@ -1,0 +1,38 @@
+---
+// component import
+import CategoryCloud from "../components/CategoryCloud.astro"
+import PostHeader from "../components/PostHeader.astro"
+import RelatedPost from "../components/RelatedPost.astro"
+import { formatBlogPosts } from "../js/utils"
+import MainLayout from "./MainLayout.astro"
+
+const { frontmatter } = Astro.props
+const { title, description, date, category, author, image } = frontmatter
+const allPosts = await Astro.glob("../pages/blog/*.md")
+const fromattedPosts = formatBlogPosts(allPosts, { sortByDate: false })
+const relatedPosts = fromattedPosts.filter((post) => post.frontmatter.category === category && post.frontmatter.title !== title)
+// console.log(relatedPosts)
+---
+
+<MainLayout {title} {description}>
+  <PostHeader {title} {description} {date} {category} {image} {author} />
+  <div class='post-content'>
+    <div class='content'>
+      <slot />
+    </div>
+    <div class='sidebar'>
+      <aside class='container' aria-label='Blog categories'>
+        <h2 class='h3'>Blog Categories</h2>
+        <CategoryCloud showCount={true} />
+      </aside>
+      {
+        relatedPosts.length > 0 && (
+          <aside class='container' aria-label='Related posts'>
+            <h2 class='h3'>Related Posts</h2>
+            <RelatedPost {relatedPosts} />
+          </aside>
+        )
+      }
+    </div>
+  </div>
+</MainLayout>
